@@ -1,6 +1,10 @@
-class Human : Entity
+public class Human : Entity, ITile
 {
-    public override Tile tile => Tile.Human;
+    // ITile implementation
+    public override char Symbol => 'H';
+
+    public override string Description => $"Human{(IsInfected ? " (Infected)" : "")}";
+    public override int RenderPriority => 20;
 
     public bool IsAlive { get; private set; } = true;
 

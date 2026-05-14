@@ -1,6 +1,10 @@
-class Doctor : Human, IHealingAbility
+public class Doctor : Human, ITile, IHealingAbility
 {
-    public override Tile tile => Tile.Doctor;
+    // ITile implementation
+    public override char Symbol => 'D';
+
+    public override string Description => "Doctor";
+    public override int RenderPriority => 25;
 
     public int Range => 3;
 

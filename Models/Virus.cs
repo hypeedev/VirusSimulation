@@ -1,4 +1,4 @@
-class Virus
+public class Virus
 {
     public string Name { get; set; }
 

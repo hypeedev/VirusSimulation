@@ -1,4 +1,5 @@
 using System.Linq;
+
 Board board = new Board(40, 40);
 
 Virus virus = new Virus(
@@ -32,6 +33,8 @@ var firstHuman =
 
 firstHuman.Infect(virus);
 
+var renderer = new Renderer(board);
+
 // simulation loop
 while (true)
 {
@@ -52,7 +55,7 @@ while (true)
 
     virus.Spread(board);
 
-    board.print();
+    renderer.Render();
 
     Thread.Sleep(200);
 }

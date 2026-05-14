@@ -1,6 +1,10 @@
-class Hospital : Entity, IHealingAbility
+public class Hospital : Entity, ITile, IHealingAbility
 {
-    public override Tile tile => Tile.Hospital;
+    // ITile implementation
+    public override char Symbol => '+';
+
+    public override string Description => "Hospital";
+    public override int RenderPriority => 30;
 
     public int Range => 2;
 

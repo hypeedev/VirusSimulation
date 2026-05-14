@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-class MapGenerator {
+public class MapGenerator {
     private class Node {
         public int x, y, region;
         public int dist;
@@ -42,12 +42,14 @@ class MapGenerator {
 
         // Step 3: Convert to tile map
         var map = new Tile[width, height];
+        Tile[] regionTiles = { Tile.Region0, Tile.Region1, Tile.Region2, Tile.Region3 };
+        
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (owner[x, y] == -1) {
                     map[x, y] = Tile.Water;
                 } else {
-                    map[x, y] = (Tile)(owner[x, y] + (int)Tile.Region0);
+                    map[x, y] = regionTiles[owner[x, y]];
                 }
             }
         }

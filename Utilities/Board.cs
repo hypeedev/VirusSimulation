@@ -1,7 +1,10 @@
-class Board {
+public class Board {
     Tile[,] grid;
     public List<Entity> entities = new List<Entity>();
     Random random = new Random();
+
+    public int Width => grid.GetLength(0);
+    public int Height => grid.GetLength(1);
 
     public Board(int width, int height) {
         var generator = new MapGenerator(width, height);
@@ -49,7 +52,7 @@ class Board {
 
                 if (entity != null)
                 {
-                    Console.Write(entity.tile.Symbol() + " ");
+                    Console.Write(entity.Symbol + " ");
                 }
                 else
                 {
@@ -59,6 +62,18 @@ class Board {
 
             Console.WriteLine();
         }
+    }
+    
+    public Tile GetTileAt(int x, int y)
+    {
+        if (x < 0 || y < 0 || x >= Width || y >= Height)
+            return Tile.Water;
+        return grid[x, y];
+    }
+
+    public Entity? GetEntityAt(int x, int y)
+    {
+        return entities.FirstOrDefault(e => e.x == x && e.y == y);
     }
     
     public bool IsWalkable(int x, int y)
