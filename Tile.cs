@@ -3,6 +3,8 @@ public enum Tile {
     Land = '.',
     Entity = 'E',
     Human = 'H',
+    Doctor = 'D',
+    Hospital = '+',
     Region0 = '0',
     Region1 = '1',
     Region2 = '2',
