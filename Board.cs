@@ -1,6 +1,6 @@
 class Board {
     Tile[,] grid;
-    List<Entity> entities = new List<Entity>();
+    public List<Entity> entities = new List<Entity>();
     Random random = new Random();
 
     public Board(int width, int height) {
@@ -24,7 +24,6 @@ class Board {
 
     public void addEntity(Entity entity) {
         entities.Add(entity);
-        grid[entity.x, entity.y] = entity.tile;
     }
 
     // TODO: This can get into an infinite loop if the board is full of entities.
@@ -38,13 +37,88 @@ class Board {
         addEntity(factory(x, y));
     }
 
-    public void print() {
-        for (int y = 0; y < grid.GetLength(1); y++) {
-            for (int x = 0; x < grid.GetLength(0); x++) {
-                Tile tile = grid[x, y];
-                Console.Write(tile.Symbol() + " ");
+    public void print()
+    {
+        for (int y = 0; y < grid.GetLength(1); y++)
+        {
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                Entity? entity =
+                    entities.FirstOrDefault(
+                        e => e.x == x && e.y == y);
+
+                if (entity != null)
+                {
+                    Console.Write(entity.tile.Symbol() + " ");
+                }
+                else
+                {
+                    Console.Write(grid[x, y].Symbol() + " ");
+                }
             }
+
             Console.WriteLine();
         }
+    }
+    
+    public bool IsWalkable(int x, int y)
+    {
+        // poza mapa
+        if (x < 0 || y < 0 ||
+            x >= grid.GetLength(0) ||
+            y >= grid.GetLength(1))
+        {
+            return false;
+        }
+
+        // woda
+        if (grid[x, y] == Tile.Water)
+        {
+            return false;
+        }
+
+        return true;
+    }
+    
+    public List<Human> GetHumansInRange(
+        int cx,
+        int cy,
+        int range)
+    {
+        List<Human> result = new();
+
+        foreach (var entity in entities)
+        {
+            if (entity is Human human)
+            {
+                int dx = human.x - cx;
+                int dy = human.y - cy;
+
+                if (dx * dx + dy * dy <= range * range)
+                {
+                    result.Add(human);
+                }
+            }
+        }
+
+        return result;
+    }
+    
+    public List<Human> GetInfectedHumans()
+    {
+        List<Human> result = new();
+
+        foreach (var entity in entities)
+        {
+            if (entity is Human human)
+            {
+                if (human.IsInfected)
+                {
+                    result.Add(human);
+                }
+            }
+        }
+
+        return result;
     }
 }
