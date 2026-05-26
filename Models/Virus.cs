@@ -1,4 +1,4 @@
-public class Virus
+public abstract class Virus
 {
     public string Name { get; set; }
 
@@ -28,6 +28,8 @@ public class Virus
 
         foreach (var source in infected)
         {
+            if (!source.IsAlive)
+                continue;
             var nearby =
                 board.GetHumansInRange(
                     source.x,
@@ -47,7 +49,10 @@ public class Virus
                     target.Infect(this);
                 }
             }
-
+            
+            if (!source.IsAlive)
+                continue;
+            
             if (rng.NextSingle() <= Mortality)
             {
                 source.Die();
