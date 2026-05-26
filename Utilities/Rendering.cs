@@ -171,8 +171,14 @@ public class ColorScheme
     public AnsiColor GetEntityColor(Entity entity)
     {
         // Check if human or doctor is infected
-        if (entity is Human human && human.IsInfected)
-            return AnsiColor.Red;
+        if (entity is Human human)
+        {
+            if (!human.IsAlive)
+                return AnsiColor.Black;
+
+            if (human.IsInfected)
+                return AnsiColor.Red;
+        }
 
         var type = entity.GetType();
 
