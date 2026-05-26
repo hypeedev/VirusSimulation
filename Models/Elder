@@ -1,0 +1,19 @@
+public class Elder : Human
+{
+    public override char Symbol => 'O';
+
+    public Elder(int x, int y)
+        : base(x, y)
+    {
+
+    }
+
+    public override void Update(Board board)
+    {
+        // wolniejszy ruch
+        if (Random.Shared.NextSingle() < 0.5f)
+        {
+            base.Update(board);
+        }
+    }
+}
