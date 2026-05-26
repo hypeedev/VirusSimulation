@@ -5,6 +5,9 @@ public class Board {
 
     public int Width => grid.GetLength(0);
     public int Height => grid.GetLength(1);
+    
+    public float AwarenessLevel { get; set; }
+    public bool LockdownEnabled { get; set; }
 
     public Board(int width, int height) {
         var generator = new MapGenerator(width, height);
@@ -73,7 +76,16 @@ public class Board {
 
     public Entity? GetEntityAt(int x, int y)
     {
-        return entities.FirstOrDefault(e => e.x == x && e.y == y);
+        return entities.FirstOrDefault(e =>
+        {
+            if (e.x != x || e.y != y)
+                return false;
+
+            if (e is Human h)
+                return h.IsAlive;
+
+            return true;
+        });
     }
     
     public bool IsWalkable(int x, int y)
@@ -127,7 +139,8 @@ public class Board {
         {
             if (entity is Human human)
             {
-                if (human.IsInfected)
+                if (human.IsAlive &&
+                    human.IsInfected)
                 {
                     result.Add(human);
                 }
@@ -135,5 +148,10 @@ public class Board {
         }
 
         return result;
+    }
+    
+    public Tile GetRegionAt(int x, int y)
+    {
+        return grid[x, y];
     }
 }
