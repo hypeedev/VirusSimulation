@@ -11,7 +11,7 @@ public class Student : Human
 
     }
 
-    public override void Infect(Virus virus)
+    public override void Infect(IVirus virus)
     {
         if (Random.Shared.NextSingle() < 0.5f)
             return;

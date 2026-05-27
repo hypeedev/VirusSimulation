@@ -5,7 +5,7 @@ Console.WriteLine("2 - Covid");
 Console.WriteLine("3 - Rabies");
 int virusChoice = int.Parse(Console.ReadLine()!);
 
-Virus virus;
+IVirus virus;
 
 switch (virusChoice)
 {

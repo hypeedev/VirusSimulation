@@ -1,12 +1,19 @@
-public class Covid : Virus
+public class Covid : IVirus
 {
-    public Covid()
-        : base(
-            "Covid",
-            0.5f,
-            0.02f,
-            2)
-    {
+    public string Name { get; } = "Covid";
 
+    public float Infectivity { get; } = 0.5f;
+
+    public float Mortality { get; } = 0.02f;
+
+    public int InfectionRange { get; } = 2;
+
+    private readonly ISpreadLogic spreadLogic =
+        SpreadLogicFactory.Create(
+            SpreadLogicType.DistanceWeighted);
+
+    public void Spread(Board board)
+    {
+        spreadLogic.Spread(this, board);
     }
 }

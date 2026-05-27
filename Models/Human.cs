@@ -8,7 +8,7 @@ public class Human : Entity, ITile
 
     public bool IsAlive { get; private set; } = true;
 
-    public Virus? Virus { get; private set; }
+    public IVirus? Virus { get; private set; }
 
     public bool IsInfected => Virus != null;
 
@@ -110,7 +110,7 @@ public class Human : Entity, ITile
         }
     }
 
-    public virtual void Infect(Virus virus)
+    public virtual void Infect(IVirus virus)
     {
         if (Virus != null)
             return;

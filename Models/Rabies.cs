@@ -1,11 +1,19 @@
-public class Rabies : Virus
+public class Rabies : IVirus
 {
-    public Rabies()
-        : base(
-            "Rabies",
-            0.5f,
-            0.7f,
-            1)
+    public string Name { get; } = "Rabies";
+
+    public float Infectivity { get; } = 0.5f;
+
+    public float Mortality { get; } = 0.7f;
+
+    public int InfectionRange { get; } = 1;
+
+    private readonly ISpreadLogic spreadLogic =
+        SpreadLogicFactory.Create(
+            SpreadLogicType.Focused);
+
+    public void Spread(Board board)
     {
+        spreadLogic.Spread(this, board);
     }
 }
