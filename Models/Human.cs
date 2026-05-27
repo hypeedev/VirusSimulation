@@ -14,15 +14,27 @@ public class Human : Entity, ITile
 
     public int HealingTicks { get; set; }
 
+    public int Age { get; }
+
     public Tile HomeRegion { get; set; }
 
     public int MigrationCooldown { get; set; }
 
     Random rng = new();
 
+    const float BaseMigrationChance = 0.006f;
+    const float MinMigrationChance = 0.001f;
+    const float MaxMigrationChance = 0.02f;
+
     public Human(int x, int y) : base(x, y)
     {
+        Age = Random.Shared.Next(18, 70);
         HomeRegion = Tile.Region0;
+    }
+
+    public Human(int x, int y, int age) : this(x, y)
+    {
+        Age = age;
     }
 
     public override void Update(Board board)
@@ -48,7 +60,7 @@ public class Human : Entity, ITile
             MigrationCooldown--;
         }
 
-        if (rng.NextSingle() < 0.01f &&
+        if (rng.NextSingle() < GetMigrationChance() &&
             MigrationCooldown == 0)
         {
             LongDistanceMigration(board);
@@ -110,6 +122,60 @@ public class Human : Entity, ITile
         }
     }
 
+    protected static int RandomAge(int min, int max)
+    {
+        return Random.Shared.Next(min, max + 1);
+    }
+
+    private float GetMigrationChance()
+    {
+        float chance =
+            BaseMigrationChance *
+            GetOccupationMultiplier() *
+            GetAgeMultiplier();
+
+        return Clamp(
+            chance,
+            MinMigrationChance,
+            MaxMigrationChance);
+    }
+
+    private float GetOccupationMultiplier()
+    {
+        if (this is Student)
+            return 1.4f;
+
+        if (this is Worker)
+            return 1.1f;
+
+        if (this is Doctor)
+            return 1.0f;
+
+        if (this is Elder)
+            return 0.7f;
+
+        return 1.0f;
+    }
+
+    private float GetAgeMultiplier()
+    {
+        float ageFactor =
+            1.4f - (Age / 100f);
+
+        return Clamp(ageFactor, 0.6f, 1.4f);
+    }
+
+    private float Clamp(float value, float min, float max)
+    {
+        if (value < min)
+            return min;
+
+        if (value > max)
+            return max;
+
+        return value;
+    }
+
     public virtual void Infect(IVirus virus)
     {
         if (Virus != null)
@@ -127,7 +193,6 @@ public class Human : Entity, ITile
     public void Die()
     {
         IsAlive = false;
-
         Virus = null;
     }
 }

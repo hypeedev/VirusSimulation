@@ -3,7 +3,7 @@ public class Elder : Human
     public override char Symbol => 'O';
 
     public Elder(int x, int y)
-        : base(x, y)
+        : base(x, y, RandomAge(65, 90))
     {
 
     }

@@ -10,7 +10,7 @@ public class Doctor : Human, ITile, IHealingAbility
 
     public float Effectiveness => 0.8f;
 
-    public Doctor(int x, int y) : base(x, y)
+    public Doctor(int x, int y) : base(x, y, RandomAge(28, 65))
     {
 
     }

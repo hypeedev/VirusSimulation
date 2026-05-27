@@ -6,7 +6,7 @@ public class Worker : Human
         $"Worker{(IsInfected ? " (Infected)" : "")}";
 
     public Worker(int x, int y)
-        : base(x, y)
+        : base(x, y, RandomAge(23, 60))
     {
 
     }

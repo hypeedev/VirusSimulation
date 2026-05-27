@@ -38,6 +38,9 @@ int elders = int.Parse(Console.ReadLine()!);
 Console.Write("Doctors: ");
 int doctors = int.Parse(Console.ReadLine()!);
 
+Console.Write("Hospitals: ");
+int hospitals = int.Parse(Console.ReadLine()!);
+
 Board board = new Board(40, 40);
 
 // spawn workers
@@ -68,9 +71,12 @@ for (int i = 0; i < doctors; i++)
         new Doctor(x, y));
 }
 
-// spawn hospital
-board.addRandomEntity((x, y) =>
-    new Hospital(x, y));
+// spawn hospitals
+for (int i = 0; i < hospitals; i++)
+{
+    board.addRandomEntity((x, y) =>
+        new Hospital(x, y));
+}
 
 // infect first human
 var firstHuman =

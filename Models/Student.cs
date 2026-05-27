@@ -6,7 +6,7 @@ public class Student : Human
         $"Student{(IsInfected ? " (Infected)" : "")}";
 
     public Student(int x, int y)
-        : base(x, y)
+        : base(x, y, RandomAge(16, 25))
     {
 
     }
