@@ -43,7 +43,7 @@ public class MapGenerator {
         // Step 3: Convert to tile map
         var map = new Tile[width, height];
         Tile[] regionTiles = { Tile.Region0, Tile.Region1, Tile.Region2, Tile.Region3 };
-        
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (owner[x, y] == -1) {

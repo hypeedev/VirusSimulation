@@ -106,20 +106,6 @@ public readonly struct AnsiColor
     {
         return new(ansiCode);
     }
-
-    public static AnsiColor FromPalette(int colorIndex)
-    {
-        if (colorIndex < 0 || colorIndex > 255)
-            throw new ArgumentException("Color index must be between 0 and 255");
-        return new($"\u001b[38;5;{colorIndex}m");
-    }
-
-    public static AnsiColor FromRGB(int r, int g, int b)
-    {
-        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
-            throw new ArgumentException("RGB values must be between 0 and 255");
-        return new($"\u001b[38;2;{r};{g};{b}m");
-    }
 }
 
 public class ColorScheme
