@@ -13,7 +13,7 @@ public class Human : Entity, ITile
     public bool IsInfected => Virus != null;
 
     public int HealingTicks { get; set; }
-    
+
     public Tile HomeRegion { get; set; }
 
     public int MigrationCooldown { get; set; }
@@ -42,19 +42,19 @@ public class Human : Entity, ITile
         {
             return;
         }
-        
+
         if (MigrationCooldown > 0)
         {
             MigrationCooldown--;
         }
-        
+
         if (rng.NextSingle() < 0.01f &&
             MigrationCooldown == 0)
         {
             LongDistanceMigration(board);
             return;
         }
-        
+
         int dx = rng.Next(-1, 2);
         int dy = rng.Next(-1, 2);
 
@@ -82,7 +82,7 @@ public class Human : Entity, ITile
             y = ny;
         }
     }
-    
+
     private void LongDistanceMigration(Board board)
     {
         for (int i = 0; i < 100; i++)
@@ -95,14 +95,14 @@ public class Human : Entity, ITile
 
             Tile targetRegion =
                 board.GetRegionAt(nx, ny);
-            
+
             if (targetRegion != HomeRegion)
             {
                 x = nx;
                 y = ny;
-                
+
                 HomeRegion = targetRegion;
-                
+
                 MigrationCooldown = 50;
 
                 break;

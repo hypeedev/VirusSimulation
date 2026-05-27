@@ -1,4 +1,5 @@
-public enum Tile {
+public enum Tile
+{
     Water = '~',
     Land = 'L',
     Region0 = '.',
@@ -7,8 +8,10 @@ public enum Tile {
     Region3 = '.'
 }
 
-public static class TileExtensions {
-    public static char Symbol(this Tile tile) {
+public static class TileExtensions
+{
+    public static char Symbol(this Tile tile)
+    {
         return (char)tile;
     }
 }

@@ -104,17 +104,17 @@ while (true)
 
     int infected =
         board.GetInfectedHumans().Count;
-    
+
     int dead = board.entities.Count(e => e is Human h && !h.IsAlive);
-    
+
     board.AwarenessLevel =
         MathF.Min(1f, infected / 300f);
-    
+
     stats.Save(
         tick,
         infected,
         dead);
-    
+
     int alive =
         board.entities.Count(
             e => e is Human h && h.IsAlive);
@@ -131,7 +131,7 @@ while (true)
     Console.WriteLine($"Infected: {infected}");
     Console.WriteLine($"Dead: {dead}");
     Console.WriteLine($"Awareness: {board.AwarenessLevel:F2}");
-    
+
     if (infected == 0)
     {
         Console.WriteLine("Virus eliminated!");
@@ -140,7 +140,7 @@ while (true)
 
         break;
     }
-    
+
     if (infected >= board.entities.Count(e => e is Human) - 1)
     {
         Console.WriteLine("World fully infected!");
@@ -149,7 +149,7 @@ while (true)
 
         break;
     }
-    
+
     if (infected == lastInfected)
     {
         stagnationTicks++;
@@ -160,7 +160,7 @@ while (true)
     }
 
     lastInfected = infected;
-    
+
     if (stagnationTicks > 100)
     {
         Console.WriteLine("Virus stagnated!");

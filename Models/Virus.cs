@@ -49,10 +49,10 @@ public abstract class Virus
                     target.Infect(this);
                 }
             }
-            
+
             if (!source.IsAlive)
                 continue;
-            
+
             if (rng.NextSingle() <= Mortality)
             {
                 source.Die();

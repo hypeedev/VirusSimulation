@@ -1,42 +1,53 @@
-public class Board {
+public class Board
+{
     Tile[,] grid;
     public List<Entity> entities = new List<Entity>();
     Random random = new Random();
 
     public int Width => grid.GetLength(0);
     public int Height => grid.GetLength(1);
-    
+
     public float AwarenessLevel { get; set; }
     public bool LockdownEnabled { get; set; }
 
-    public Board(int width, int height) {
+    public Board(int width, int height)
+    {
         var generator = new MapGenerator(width, height);
         grid = generator.Generate();
     }
 
-    public Board(int width, int height, bool useSimple) {
-        if (!useSimple) {
+    public Board(int width, int height, bool useSimple)
+    {
+        if (!useSimple)
+        {
             var generator = new MapGenerator(width, height);
             grid = generator.Generate();
-        } else {
+        }
+        else
+        {
             grid = new Tile[width, height];
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
                     grid[x, y] = Tile.Land;
                 }
             }
         }
     }
 
-    public void addEntity(Entity entity) {
+    public void addEntity(Entity entity)
+    {
         entities.Add(entity);
     }
 
     // TODO: This can get into an infinite loop if the board is full of entities.
-    public void addRandomEntity(System.Func<int, int, Entity> factory) {
+    public void addRandomEntity(System.Func<int, int, Entity> factory)
+    {
         int x = random.Next(grid.GetLength(0));
         int y = random.Next(grid.GetLength(1));
-        if (grid[x, y] != Tile.Land && grid[x, y] != Tile.Region0 && grid[x, y] != Tile.Region1 && grid[x, y] != Tile.Region2 && grid[x, y] != Tile.Region3) {
+        if (grid[x, y] != Tile.Land && grid[x, y] != Tile.Region0 && grid[x, y] != Tile.Region1 && grid[x, y] != Tile.Region2 && grid[x, y] != Tile.Region3)
+        {
             addRandomEntity(factory);
             return;
         }
@@ -66,7 +77,7 @@ public class Board {
             Console.WriteLine();
         }
     }
-    
+
     public Tile GetTileAt(int x, int y)
     {
         if (x < 0 || y < 0 || x >= Width || y >= Height)
@@ -87,7 +98,7 @@ public class Board {
             return true;
         });
     }
-    
+
     public bool IsWalkable(int x, int y)
     {
         // poza mapa
@@ -106,7 +117,7 @@ public class Board {
 
         return true;
     }
-    
+
     public List<Human> GetHumansInRange(
         int cx,
         int cy,
@@ -130,7 +141,7 @@ public class Board {
 
         return result;
     }
-    
+
     public List<Human> GetInfectedHumans()
     {
         List<Human> result = new();
@@ -149,7 +160,7 @@ public class Board {
 
         return result;
     }
-    
+
     public Tile GetRegionAt(int x, int y)
     {
         return grid[x, y];
