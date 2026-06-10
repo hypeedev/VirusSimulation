@@ -1,63 +1,63 @@
 # Virus Simulation
 
-A console-based epidemic simulation in C#. Simulates virus spread across a procedurally generated map with different human types, movement behaviors, and mitigation strategies.
+Konsolowa symulacja epidemii napisana w C#. Symuluje rozprzestrzenianie się wirusa na proceduralnie generowanej mapie z różnymi typami ludzi, zachowaniami ruchowymi i strategiami zapobiegawczymi.
 
-## Requirements
+## Wymagania
 
-- .NET SDK 10.0 or later
+- .NET SDK 10.0 lub nowszy
 
-## Build
+## Budowanie
 
 ```sh
 dotnet build
 ```
 
-## Run
+## Uruchamianie
 
 ```sh
 dotnet run
 ```
 
-The program prompts for:
-- Virus type (Flu / Covid / Rabies)
-- Population counts (Workers, Students, Elders, Doctors, Hospitals)
+Program pyta o:
+- Typ wirusa (Flu / Covid / Rabies)
+- Liczebność populacji (Workers, Students, Elders, Doctors, Hospitals)
 
-## Run Tests
+## Uruchamianie testów
 
 ```sh
 dotnet test tests/VirusSimulation.Tests
 ```
 
-Tests use xUnit and cover:
-- Human infection, healing, death, and immunity
-- Board walkability, entity queries, and range calculations
-- Virus properties and spread logic
-- Statistics CSV export
-- Hospital and Doctor healing behavior
+Testy używają xUnit i obejmują:
+- Infekcję, leczenie, śmierć i odporność ludzi
+- Przechodniość planszy, zapytania o jednostki i obliczanie zasięgu
+- Właściwości wirusów i logikę rozprzestrzeniania
+- Eksport statystyk do CSV
+- Leczenie przez szpital i doktora
 
-All RNG-dependent tests use a deterministic seed (`GameRandom.Create(42)`),
-making them reproducible across runs. The `IRandom` interface allows injecting
-seeded RNGs for testing while using `GameRandom.Create()` (unseeded) in production.
+Wszystkie testy zależne od RNG używają deterministycznego ziarna (`GameRandom.Create(42)`),
+co zapewnia powtarzalność. Interfejs `IRandom` pozwala wstrzykiwać RNG z ziarnem
+w testach, podczas gdy w produkcji używane jest `GameRandom.Create()` (bez ziarna).
 
-## Project Structure
+## Struktura projektu
 
 ```
 Interfaces/       – ITile, IVirus, ISpreadLogic, IHealingAbility, IRandom
 Models/
-  Entities/       – Entity base, Hospital
+  Entities/       – Entity (bazowa), Hospital
   Humans/         – Human, Worker, Student, Elder, Doctor
-  Map/            – Tile enum
+  Map/            – Tile (enum)
   SpreadLogic/    – Uniform, DistanceWeighted, Focused spread
   Viruses/        – Flu, Covid, Rabies
 Utilities/        – Board, MapGenerator, Renderer, Statistics, GameRandom
-tests/            – xUnit test project
+tests/            – projekt testowy xUnit
 ```
 
-## Simulation Details
+## Szczegóły symulacji
 
-- Humans move randomly with optional long-distance migration between regions
-- Viruses spread with configurable infectivity, mortality, and range
-- Lockdown activates when infection exceeds 80% of alive population
-- Awareness reduces movement as infection grows
-- Hospitals and Doctors heal nearby infected humans over 5 ticks
-- Results exported to `simulation.csv`
+- Ludzie poruszają się losowo z opcjonalną migracją dalekodystansową między regionami
+- Wirusy rozprzestrzeniają się z konfigurowalną zakaźnością, śmiertelnością i zasięgiem
+- Blokada (lockdown) aktywuje się, gdy infekcja przekracza 80% żyjącej populacji
+- Świadomość (awareness) zmniejsza ruchliwość w miarę wzrostu liczby zarażonych
+- Szpitale i lekarze leczą pobliskich zarażonych przez 5 ticków
+- Wyniki eksportowane do pliku `simulation.csv`
