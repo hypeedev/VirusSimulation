@@ -2,7 +2,7 @@ public class Flu : IVirus
 {
     public string Name { get; } = "Flu";
 
-    public float Infectivity { get; } = 0.15f;
+    public float Infectivity { get; } = 0.25f;
 
     public float Mortality { get; } = 0.005f;
 
