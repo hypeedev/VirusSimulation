@@ -125,7 +125,7 @@ while (true)
         board.entities.Count(
             e => e is Human h && h.IsAlive);
 
-    if (infected > alive * 0.4f)
+    if (infected > alive * 0.8f)
     {
         board.LockdownEnabled = true;
     }
