@@ -22,7 +22,7 @@ public class Human : Entity, ITile
 
     Random rng = new();
 
-    const float BaseMigrationChance = 0.006f;
+    const float BaseMigrationChance = 0.03f;
     const float MinMigrationChance = 0.001f;
     const float MaxMigrationChance = 0.02f;
 
@@ -115,7 +115,7 @@ public class Human : Entity, ITile
 
                 HomeRegion = targetRegion;
 
-                MigrationCooldown = 50;
+                MigrationCooldown = 15;
 
                 break;
             }
