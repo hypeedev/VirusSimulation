@@ -1,0 +1,238 @@
+@startuml
+
+' ===== Interfaces =====
+
+interface ITile {
+  + {abstract} char Symbol
+  + {abstract} string Description
+  + {abstract} int RenderPriority
+}
+
+interface IVirus {
+  + {abstract} string Name
+  + {abstract} float Infectivity
+  + {abstract} float Mortality
+  + {abstract} int InfectionRange
+  + {abstract} void Spread(Board board)
+}
+
+interface ISpreadLogic {
+  + {abstract} void Spread(IVirus virus, Board board)
+}
+
+interface IHealingAbility {
+  + {abstract} int Range
+  + {abstract} float Effectiveness
+  + {abstract} void Heal(Human target)
+}
+
+interface IRandom {
+  + {abstract} int Next()
+  + {abstract} int Next(int maxValue)
+  + {abstract} int Next(int minValue, int maxValue)
+  + {abstract} float NextSingle()
+}
+
+' ===== Enums =====
+
+enum Tile {
+  Water
+  Land
+  Region0
+  Region1
+  Region2
+  Region3
+}
+
+enum SpreadLogicType {
+  Uniform
+  DistanceWeighted
+  Focused
+}
+
+' ===== Classes =====
+
+class Board {
+  - Tile[,] grid
+  - IRandom random
+  + List~Entity~ entities
+  + int Width
+  + int Height
+  + float AwarenessLevel
+  + bool LockdownEnabled
+  + void addEntity(Entity entity)
+  + void addRandomEntity(Func~int, int, Entity~ factory)
+  + bool IsWalkable(int x, int y)
+  + Tile GetTileAt(int x, int y)
+  + Entity? GetEntityAt(int x, int y)
+  + List~Human~ GetHumansInRange(int cx, int cy, int range)
+  + List~Human~ GetInfectedHumans()
+  + Tile GetRegionAt(int x, int y)
+}
+
+class MapGenerator {
+  - int width
+  - int height
+  - IRandom rng
+  + Tile[,] Generate()
+}
+
+class Entity {
+  # int x
+  # int y
+  + {virtual} char Symbol
+  + {virtual} string Description
+  + {virtual} int RenderPriority
+  + {virtual} void Update(Board board)
+}
+
+class Human {
+  + bool IsAlive
+  + IVirus? Virus
+  + bool IsInfected
+  + int HealingTicks
+  + int Age
+  + Tile HomeRegion
+  + int MigrationCooldown
+  # IRandom rng
+  + {virtual} void Move(Board board)
+  + {virtual} void Infect(IVirus virus)
+  + void Heal()
+  + void Die()
+}
+
+class Student {
+  + {override} void Infect(IVirus virus)
+}
+
+class Worker {
+  + {override} void Move(Board board)
+}
+
+class Doctor {
+  + int Range
+  + float Effectiveness
+  + void Heal(Human target)
+}
+
+class Elder {
+  + {override} void Update(Board board)
+}
+
+class Hospital {
+  + int Range
+  + float Effectiveness
+  + void Heal(Human target)
+}
+
+class Flu {
+  - ISpreadLogic spreadLogic
+  + string Name
+  + float Infectivity
+  + float Mortality
+  + int InfectionRange
+  + void Spread(Board board)
+}
+
+class Covid {
+  - ISpreadLogic spreadLogic
+  + string Name
+  + float Infectivity
+  + float Mortality
+  + int InfectionRange
+  + void Spread(Board board)
+}
+
+class Rabies {
+  - ISpreadLogic spreadLogic
+  + string Name
+  + float Infectivity
+  + float Mortality
+  + int InfectionRange
+  + void Spread(Board board)
+}
+
+abstract class SpreadLogicBase {
+  # IRandom rng
+  + void Spread(IVirus virus, Board board)
+  # {abstract} void SpreadFromSource(IVirus virus, Board board, Human source)
+  # void TryInfect(IVirus virus, Human source, Human target, float chance)
+}
+
+class UniformSpreadLogic
+class DistanceWeightedSpreadLogic
+class FocusedSpreadLogic
+
+class SpreadLogicFactory {
+  + {static} ISpreadLogic Create(SpreadLogicType type)
+}
+
+class GameRandom {
+  - Random _rng
+  + int Next()
+  + int Next(int maxValue)
+  + int Next(int minValue, int maxValue)
+  + float NextSingle()
+  + {static} IRandom Create()
+  + {static} IRandom Create(int seed)
+}
+
+' ===== Inheritance =====
+
+Entity <|-- Human
+Human <|-- Student
+Human <|-- Worker
+Human <|-- Doctor
+Human <|-- Elder
+
+Entity <|-- Hospital
+
+SpreadLogicBase <|-- UniformSpreadLogic
+SpreadLogicBase <|-- DistanceWeightedSpreadLogic
+SpreadLogicBase <|-- FocusedSpreadLogic
+
+' ===== Interface Realization =====
+
+ITile <|.. Entity
+IHealingAbility <|.. Doctor
+IHealingAbility <|.. Hospital
+IVirus <|.. Flu
+IVirus <|.. Covid
+IVirus <|.. Rabies
+ISpreadLogic <|.. SpreadLogicBase
+IRandom <|.. GameRandom
+
+' ===== Composition (strong ownership) =====
+
+Board *-- "grid" Tile
+Board *-- "entities" Entity
+Flu *-- "spreadLogic" ISpreadLogic
+Covid *-- "spreadLogic" ISpreadLogic
+Rabies *-- "spreadLogic" ISpreadLogic
+SpreadLogicBase *-- "rng" IRandom
+
+' ===== OOP Concept Notes =====
+
+note top of Entity : **Hierarchia dziedziczenia**\nEntity → Human, Hospital\nHuman → Student, Worker, Doctor, Elder
+
+note bottom of Human : **Polimorfizm**\n• Student: Infect() — 50% odporności\n• Worker: Move() — podwójny ruch\n• Elder: Update() — 50% szansy\n• Doctor: Update() — ruch + leczenie
+
+note right of SpreadLogicBase : **Metoda Szablonowa**\nSpread() — szkielet,\nSpreadFromSource() — abstrakcyjna
+
+note right of Flu : **Wzorzec Strategii**\nWirusy komponują ISpreadLogic\nzamiast dziedziczyć logikę\n• Flu: Uniform\n• Covid: DistanceWeighted\n• Rabies: Focused
+
+note top of IRandom : **Wstrzykiwanie Zależności**\nIRandom wstrzykiwany do\nBoard, Human, SpreadLogicBase
+
+note right of SpreadLogicFactory : **Wzorzec Fabryki**\nCache'uje instancje\nISpreadLogic wg typu
+
+note right of ITile : **Segregacja Interfejsów**\n5 małych interfejsów\nzamiast jednego dużego
+
+' ===== Associations =====
+
+Human --> "virus" IVirus
+Human --> "homeRegion" Tile
+Board --> MapGenerator : uses
+SpreadLogicFactory --> SpreadLogicType : parameter
+SpreadLogicFactory ..> ISpreadLogic : creates
+
+@enduml

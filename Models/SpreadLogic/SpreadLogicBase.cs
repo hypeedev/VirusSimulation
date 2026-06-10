@@ -1,6 +1,16 @@
 public abstract class SpreadLogicBase : ISpreadLogic
 {
-    protected readonly Random rng = new();
+    protected readonly IRandom rng;
+
+    protected SpreadLogicBase()
+    {
+        rng = GameRandom.Create();
+    }
+
+    protected SpreadLogicBase(IRandom rng)
+    {
+        this.rng = rng;
+    }
 
     public void Spread(IVirus virus, Board board)
     {

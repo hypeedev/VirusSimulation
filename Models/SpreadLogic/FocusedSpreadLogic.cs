@@ -1,5 +1,13 @@
 public class FocusedSpreadLogic : SpreadLogicBase
 {
+    public FocusedSpreadLogic() : base()
+    {
+    }
+
+    public FocusedSpreadLogic(IRandom rng) : base(rng)
+    {
+    }
+
     protected override void SpreadFromSource(
         IVirus virus,
         Board board,

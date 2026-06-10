@@ -1,6 +1,5 @@
 public class Human : Entity, ITile
 {
-    // ITile implementation
     public override char Symbol => 'H';
 
     public override string Description => $"Human{(IsInfected ? " (Infected)" : "")}";
@@ -20,7 +19,7 @@ public class Human : Entity, ITile
 
     public int MigrationCooldown { get; set; }
 
-    Random rng = new();
+    protected IRandom rng;
 
     const float BaseMigrationChance = 0.03f;
     const float MinMigrationChance = 0.001f;
@@ -28,13 +27,28 @@ public class Human : Entity, ITile
 
     public Human(int x, int y) : base(x, y)
     {
-        Age = Random.Shared.Next(18, 70);
+        rng = GameRandom.Create();
+        Age = rng.Next(18, 70);
+        HomeRegion = Tile.Region0;
+    }
+
+    public Human(int x, int y, IRandom rng) : base(x, y)
+    {
+        this.rng = rng;
+        Age = rng.Next(18, 70);
         HomeRegion = Tile.Region0;
     }
 
     public Human(int x, int y, int age) : this(x, y)
     {
         Age = age;
+    }
+
+    protected Human(int x, int y, int age, IRandom rng) : base(x, y)
+    {
+        this.rng = rng;
+        Age = age;
+        HomeRegion = Tile.Region0;
     }
 
     public override void Update(Board board)
@@ -83,7 +97,6 @@ public class Human : Entity, ITile
                 Tile nextRegion =
                     board.GetRegionAt(nx, ny);
 
-                // nie można opuścić regionu
                 if (currentRegion != nextRegion)
                 {
                     return;
@@ -120,11 +133,6 @@ public class Human : Entity, ITile
                 break;
             }
         }
-    }
-
-    protected static int RandomAge(int min, int max)
-    {
-        return Random.Shared.Next(min, max + 1);
     }
 
     private float GetMigrationChance()

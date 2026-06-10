@@ -1,5 +1,13 @@
 public class UniformSpreadLogic : SpreadLogicBase
 {
+    public UniformSpreadLogic() : base()
+    {
+    }
+
+    public UniformSpreadLogic(IRandom rng) : base(rng)
+    {
+    }
+
     protected override void SpreadFromSource(
         IVirus virus,
         Board board,

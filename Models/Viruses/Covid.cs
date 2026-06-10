@@ -8,9 +8,17 @@ public class Covid : IVirus
 
     public int InfectionRange { get; } = 2;
 
-    private readonly ISpreadLogic spreadLogic =
-        SpreadLogicFactory.Create(
-            SpreadLogicType.DistanceWeighted);
+    private readonly ISpreadLogic spreadLogic;
+
+    public Covid()
+    {
+        spreadLogic = new DistanceWeightedSpreadLogic();
+    }
+
+    public Covid(IRandom rng)
+    {
+        spreadLogic = new DistanceWeightedSpreadLogic(rng);
+    }
 
     public void Spread(Board board)
     {

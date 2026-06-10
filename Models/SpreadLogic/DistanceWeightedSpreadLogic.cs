@@ -1,5 +1,13 @@
 public class DistanceWeightedSpreadLogic : SpreadLogicBase
 {
+    public DistanceWeightedSpreadLogic() : base()
+    {
+    }
+
+    public DistanceWeightedSpreadLogic(IRandom rng) : base(rng)
+    {
+    }
+
     protected override void SpreadFromSource(
         IVirus virus,
         Board board,

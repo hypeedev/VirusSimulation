@@ -8,9 +8,17 @@ public class Flu : IVirus
 
     public int InfectionRange { get; } = 1;
 
-    private readonly ISpreadLogic spreadLogic =
-        SpreadLogicFactory.Create(
-            SpreadLogicType.Uniform);
+    private readonly ISpreadLogic spreadLogic;
+
+    public Flu()
+    {
+        spreadLogic = new UniformSpreadLogic();
+    }
+
+    public Flu(IRandom rng)
+    {
+        spreadLogic = new UniformSpreadLogic(rng);
+    }
 
     public void Spread(Board board)
     {

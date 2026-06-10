@@ -1,9 +1,15 @@
 public class Statistics
 {
     private List<string> lines = new();
+    private readonly string outputPath;
 
-    public Statistics()
+    public Statistics() : this("simulation.csv")
     {
+    }
+
+    public Statistics(string outputPath)
+    {
+        this.outputPath = outputPath;
         lines.Add("Tick,Infected,Dead");
     }
 
@@ -15,7 +21,7 @@ public class Statistics
     public void Export()
     {
         File.WriteAllLines(
-            "simulation.csv",
+            outputPath,
             lines);
     }
 }

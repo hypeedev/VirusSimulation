@@ -1,0 +1,75 @@
+@startuml
+
+object "Board" as board {
+  Width = 40
+  Height = 40
+  AwarenessLevel = 0.02
+  LockdownEnabled = false
+  entities = [worker1, student1, doctor1, hospital1]
+}
+
+object "Worker" as worker1 {
+  x = 12
+  y = 8
+  Symbol = 'W'
+  IsAlive = true
+  IsInfected = true
+  Virus = covid
+  HomeRegion = Region0
+  Age = 32
+  HealingTicks = 0
+}
+
+object "Student" as student1 {
+  x = 25
+  y = 15
+  Symbol = 'S'
+  IsAlive = true
+  IsInfected = false
+  Virus = null
+  HomeRegion = Region2
+  Age = 19
+}
+
+object "Doctor" as doctor1 {
+  x = 18
+  y = 10
+  Symbol = 'D'
+  IsAlive = true
+  IsInfected = false
+  Virus = null
+  HomeRegion = Region1
+  Age = 45
+  Range = 3
+  Effectiveness = 0.8
+}
+
+object "Hospital" as hospital1 {
+  x = 30
+  y = 5
+  Symbol = '+'
+  Range = 2
+  Effectiveness = 1.0
+}
+
+object "Covid" as covid {
+  Name = "Covid"
+  Infectivity = 0.65
+  Mortality = 0.02
+  InfectionRange = 2
+}
+
+board -- worker1 : entities
+board -- student1 : entities
+board -- doctor1 : entities
+board -- hospital1 : entities
+
+worker1 --> covid : virus
+
+note right of worker1 : Zarażony Covidem,\nmoże zarażać innych\nkażdego ticka
+
+note right of doctor1 : Leczy zakażonych\nw zasięgu 3, skuteczność 0.8\n(5 ticków do wyleczenia)
+
+note right of hospital1 : Budynek leczniczy,\nzasięg 2, skuteczność 1.0\n(5 ticków do wyleczenia)
+
+@enduml

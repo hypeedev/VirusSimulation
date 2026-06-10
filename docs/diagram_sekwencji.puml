@@ -1,0 +1,93 @@
+@startuml
+
+actor Program
+
+participant Board
+participant Entity
+participant Human
+participant Doctor
+participant Hospital
+participant IVirus
+participant ISpreadLogic
+participant SpreadLogicBase
+
+' ===== Phase 1: Entity Updates =====
+
+Program -> Board : foreach entity in board.entities
+
+loop for each entity
+  Program -> Entity : Update(Board)
+
+  alt Human (alive)
+    Entity -> Human : Move(Board)
+    Human -> Board : IsWalkable(nx, ny)
+    Human -> Board : GetRegionAt(x, y)
+    Board --> Human : region
+    note right: Losowy ruch;\nlockdown i świadomość\nograniczają ruch
+    Human -> Human : LongDistanceMigration()
+    Human -> Board : IsWalkable(nx, ny)
+    Board --> Human : result
+
+  else Doctor
+    Entity -> Doctor : Update(Board)
+    Doctor -> Human : Move(Board)
+    Doctor -> Board : GetHumansInRange(x, y, 3)
+    Board --> Doctor : nearby infected
+    loop for each infected
+      Doctor -> Doctor : Heal(Human target)
+      Doctor -> Human : target.HealingTicks++
+      note right: Po 5 tickach → wyleczenie
+    end
+
+  else Hospital
+    Entity -> Hospital : Update(Board)
+    Hospital -> Board : GetHumansInRange(x, y, 2)
+    Board --> Hospital : nearby infected
+    loop for each infected
+      Hospital -> Hospital : Heal(Human target)
+      Hospital -> Human : target.HealingTicks++
+      note right: Po 5 tickach → wyleczenie
+    end
+  end
+end
+
+' ===== Phase 2: Virus Spread =====
+
+Program -> IVirus : Spread(Board)
+IVirus -> ISpreadLogic : Spread(IVirus, Board)
+ISpreadLogic -> SpreadLogicBase : Spread(IVirus, Board)
+
+SpreadLogicBase -> Board : GetInfectedHumans()
+Board --> SpreadLogicBase : List~Human~ infected
+
+loop for each infected source
+  SpreadLogicBase -> SpreadLogicBase : SpreadFromSource(virus, board, source)
+
+  SpreadLogicBase -> Board : GetHumansInRange(source.x, source.y, virus.InfectionRange)
+  Board --> SpreadLogicBase : List~Human~ nearby
+
+  alt UniformSpreadLogic
+    loop for each nearby
+      SpreadLogicBase -> SpreadLogicBase : TryInfect(virus, source, target, Infectivity)
+      SpreadLogicBase -> Human : Infect(virus)
+      note right: Stałe\nprawdopodobieństwo\nzarażenia
+    end
+  else DistanceWeightedSpreadLogic
+    loop for each nearby
+      SpreadLogicBase -> SpreadLogicBase : TryInfect(virus, source, target,\nInfectivity * weight)
+      SpreadLogicBase -> Human : Infect(virus)
+      note right: Szansa = Infectivity\n* (1 - dystans/(zasięg+1))
+    end
+  else FocusedSpreadLogic
+    SpreadLogicBase -> SpreadLogicBase : Pick random candidate
+    SpreadLogicBase -> SpreadLogicBase : TryInfect(virus, source, chosen, Infectivity)
+    SpreadLogicBase -> Human : Infect(virus)
+    note right: Jeden losowy cel\nw zasięgu
+  end
+
+  SpreadLogicBase -> SpreadLogicBase : rng.NextSingle() <= virus.Mortality
+  SpreadLogicBase -> Human : Die()
+  note right: Sprawdzenie\nśmiertelności dla\nkażdego źródła
+end
+
+@enduml

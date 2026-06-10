@@ -10,28 +10,32 @@ public class MapGenerator
     }
 
     private int width, height;
-    private Random rng;
+    private IRandom rng;
 
     public MapGenerator(int width, int height)
     {
         this.width = width;
         this.height = height;
-        this.rng = new Random();
+        this.rng = GameRandom.Create();
+    }
+
+    public MapGenerator(int width, int height, IRandom rng)
+    {
+        this.width = width;
+        this.height = height;
+        this.rng = rng;
     }
 
     public Tile[,] Generate()
     {
-        // Derive buffer radius and seed spacing from map size
         int minSide = Math.Min(width, height);
         float areaPerRegion = (width * height) / 4f;
 
         float regionRadius = MathF.Sqrt(areaPerRegion / MathF.PI);
 
-        // seed spacing (unchanged idea)
         float minDistance = regionRadius * 1.0f;
         int minDistSq = (int)(minDistance * minDistance);
 
-        // buffer derived ONLY from map scale
         int buffer = Math.Max(1, (int)(minSide * 0.1f));
 
         if (minSide < 20)
@@ -39,13 +43,10 @@ public class MapGenerator
             buffer = 1;
         }
 
-        // Step 1: Pick seeds with minimum distance constraint
         var seeds = PickSeeds(regionRadius);
 
-        // Step 2: Expand regions with water buffer
         var owner = ExpandRegions(seeds, buffer);
 
-        // Step 3: Convert to tile map
         var map = new Tile[width, height];
         Tile[] regionTiles = { Tile.Region0, Tile.Region1, Tile.Region2, Tile.Region3 };
 
@@ -117,7 +118,6 @@ public class MapGenerator
 
         var pq = new PriorityQueue<Node, int>();
 
-        // Initialize seeds
         for (int i = 0; i < seeds.Count; i++)
         {
             var s = seeds[i];

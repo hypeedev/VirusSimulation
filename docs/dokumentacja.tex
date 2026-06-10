@@ -1,0 +1,643 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{polyglossia}
+\setmainlanguage{polish}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\addtolength{\topmargin}{-2.5pt}
+\usepackage{titlesec}
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{csharpstyle}{
+    language=[Sharp]C,
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    rulecolor=\color{codegray}
+}
+
+\lstset{style=csharpstyle}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{VirusSimulation}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\Large\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection.}{1em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{4cm}
+    {\Huge\bfseries VirusSimulation\par}
+    \vspace{0.5cm}
+    {\Large Symulacja epidemii w konsoli\par}
+    \vspace{0.5cm}
+    {\large --- Dokumentacja ---\par}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Wstęp}
+
+\subsection{Cel projektu}
+
+Celem projektu jest stworzenie konsolowej symulacji rozprzestrzeniania się wirusa na dwuwymiarowej,
+proceduralnie generowanej mapie. Symulacja uwzględnia różne typy ludności (pracownicy, studenci,
+seniorzy, lekarze), wirusy o zróżnicowanych parametrach oraz mechanizmy zapobiegawcze, takie jak
+blokada regionów i świadomość społeczna.
+
+\subsection{Wymagania techniczne}
+
+\begin{itemize}
+    \item \textbf{Język:} C\# 13.0
+    \item \textbf{Platforma:} .NET 10.0
+    \item \textbf{Testy:} xUnit 2.x
+    \item \textbf{System kontroli wersji:} Git
+    \item \textbf{CI:} GitHub Actions (sprawdzanie formatowania kodu)
+\end{itemize}
+
+\subsection{Funkcjonalności}
+
+\begin{itemize}
+    \item Proceduralne generowanie mapy z czterema regionami oddzielonymi wodą
+    \item Trzy typy wirusów o różnych parametrach: Flu, Covid, Rabies
+    \item Pięć typów jednostek: Worker, Student, Elder, Doctor, Hospital
+    \item Trzy strategie rozprzestrzeniania się wirusa: jednolita, odległościowa, skupiona
+    \item System leczenia (lekarze mobilni i szpitale stacjonarne)
+    \item Mechanizmy zapobiegawcze: blokada regionów, świadomość społeczna
+    \item Migracja ludności między regionami
+    \item Eksport statystyk do pliku CSV
+    \item Wizualizacja w konsoli z kolorami ANSI
+\end{itemize}
+
+\section{Struktura projektu}
+
+\subsection{Układ katalogów}
+
+\begin{lstlisting}[frame=single, numbers=none, basicstyle=\ttfamily\small]
+VirusSimulation/
+  Interfaces/       - Interfejsy (ITile, IVirus, ISpreadLogic, IHealingAbility, IRandom)
+  Models/
+    Entities/       - Entity (bazowa), Hospital
+    Humans/         - Human (bazowa), Worker, Student, Elder, Doctor
+    Map/            - Tile (enum)
+    SpreadLogic/    - Strategie rozprzestrzeniania
+    Viruses/        - Flu, Covid, Rabies
+  Utilities/        - Board, MapGenerator, Rendering, Statistics, GameRandom
+  tests/            - Projekt testowy xUnit
+  *.puml            - Diagramy PlantUML (klas, obiektów, sekwencji, stanów)
+\end{lstlisting}
+
+\subsection{Pliki konfiguracyjne}
+
+\begin{itemize}
+    \item \texttt{VirusSimulation.csproj} --- główny plik projektu (.NET 10.0, exe)
+    \item \texttt{tests/VirusSimulation.Tests/VirusSimulation.Tests.csproj} --- projekt testowy
+    \item \texttt{tests/VirusSimulation.Tests/xunit.runner.json} --- konfiguracja testów
+    \item \texttt{.github/workflows/dotnet-format.yml} --- CI w GitHub Actions
+\end{itemize}
+
+\section{Architektura i wzorce projektowe}
+
+Projekt został zaprojektowany z zachowaniem zasad programowania obiektowego i wykorzystuje
+kilka kluczowych wzorców projektowych.
+
+\subsection{Hierarchia dziedziczenia}
+
+Rysunek~\ref{fig:class-diagram} przedstawia pełny diagram klas. Główna hierarchia dziedziczenia:
+
+\begin{center}
+\begin{lstlisting}[frame=none, numbers=none, basicstyle=\ttfamily\small]
+Entity (bazowa klasa dla wszystkich obiektów na planszy)
+  +-- Human (bazowa klasa dla ludzi)
+  |     +-- Worker    (podwójny ruch)
+  |     +-- Student   (50% odporności)
+  |     +-- Elder     (50% szansy na ruch)
+  |     +-- Doctor    (ruch + leczenie)
+  +-- Hospital (stacjonarna jednostka lecznicza)
+\end{lstlisting}
+\end{center}
+
+\subsection{Zastosowane wzorce projektowe}
+
+\subsubsection{Wzorzec Strategii (Strategy)}
+
+Wirusy nie dziedziczą logiki rozprzestrzeniania --- komponują ją poprzez interfejs
+\texttt{ISpreadLogic}. Każdy wirus zawiera instancję konkretnej strategii:
+
+\begin{itemize}
+    \item \texttt{Flu} $\rightarrow$ \texttt{UniformSpreadLogic}
+    \item \texttt{Covid} $\rightarrow$ \texttt{DistanceWeightedSpreadLogic}
+    \item \texttt{Rabies} $\rightarrow$ \texttt{FocusedSpreadLogic}
+\end{itemize}
+
+Dzięki temu można dowolnie łączyć wirusy ze strategiami bez modyfikacji istniejących klas.
+
+\subsubsection{Metoda Szablonowa (Template Method)}
+
+Klasa abstrakcyjna \texttt{SpreadLogicBase} definiuje szkielet metody \texttt{Spread()}:
+
+\begin{enumerate}
+    \item Iteracja po wszystkich zarażonych ludziach
+    \item Dla każdego źródła --- wywołanie abstrakcyjnej metody \texttt{SpreadFromSource()}
+    \item Sprawdzenie śmiertelności --- losowanie względem \texttt{virus.Mortality}
+\end{enumerate}
+
+Klasy pochodne implementują jedynie \texttt{SpreadFromSource()}, co wymusza spójną strukturę
+przy jednoczesnej elastyczności.
+
+\subsubsection{Wzorzec Fabryki (Factory)}
+
+\texttt{SpreadLogicFactory} tworzy i cache'uje singletonowe instancje strategii:
+
+\begin{lstlisting}[language={[Sharp]C}]
+public static ISpreadLogic Create(SpreadLogicType type)
+{
+    return type switch
+    {
+        SpreadLogicType.Uniform => _uniform ??= new UniformSpreadLogic(),
+        SpreadLogicType.DistanceWeighted => _distance ??= new DistanceWeightedSpreadLogic(),
+        SpreadLogicType.Focused => _focused ??= new FocusedSpreadLogic(),
+        _ => throw new ArgumentException($"Unknown spread logic type: {type}")
+    };
+}
+\end{lstlisting}
+
+\subsubsection{Wstrzykiwanie Zależności (Dependency Injection)}
+
+Interfejs \texttt{IRandom} jest wstrzykiwany do wszystkich klas wymagających losowości
+(\texttt{Board}, \texttt{Human}, \texttt{SpreadLogicBase}). W produkcji używany jest
+\texttt{GameRandom.Create()} (brak ziarna), w testach \texttt{GameRandom.Create(seed)}
+(deterministyczne, powtarzalne wyniki).
+
+\subsubsection{Segregacja Interfejsów (Interface Segregation)}
+
+Zamiast jednego rozbudowanego interfejsu, projekt zawiera pięć wyspecjalizowanych:
+
+\begin{itemize}
+    \item \texttt{ITile} --- symbol, opis, priorytet renderowania
+    \item \texttt{IVirus} --- właściwości wirusa, metoda rozprzestrzeniania
+    \item \texttt{ISpreadLogic} --- strategia rozprzestrzeniania
+    \item \texttt{IHealingAbility} --- zdolność leczenia
+    \item \texttt{IRandom} --- generator liczb losowych
+\end{itemize}
+
+\subsection{Pętlą symulacji}
+
+Główna pętla w \texttt{Program.cs} składa się z dwóch faz na każdy tick:
+
+\begin{enumerate}
+    \item \textbf{Aktualizacja jednostek} --- każda jednostka na planszy wywołuje
+          \texttt{Update(Board)}. Ludzie poruszają się, lekarze i szpitale leczą.
+    \item \textbf{Rozprzestrzenianie wirusa} --- aktywny wirus wywołuje \texttt{Spread(Board)},
+          który poprzez strategię rozprzestrzeniania infekuje nowe ofiary i sprawdza śmiertelność.
+\end{enumerate}
+
+Warunki zakończenia symulacji:
+\begin{itemize}
+    \item Liczba zarażonych osiąga 0 (wirus wyeliminowany)
+    \item Wszyscy ludzie są zarażeni
+    \item Liczba zarażonych nie zmienia się przez 100 kolejnych ticków (stagnacja)
+\end{itemize}
+
+\section{Opis komponentów}
+
+\subsection{Interfejsy (\texttt{Interfaces/})}
+
+\begin{itemize}
+    \item \texttt{ITile} --- definiuje \texttt{Symbol} (znak), \texttt{Description} (opis),
+          \texttt{RenderPriority} (priorytet renderowania). Implementowany przez \texttt{Entity}.
+    \item \texttt{IVirus} --- definiuje \texttt{Name}, \texttt{Infectivity}, \texttt{Mortality},
+          \texttt{InfectionRange} oraz metodę \texttt{Spread(Board)}.
+    \item \texttt{ISpreadLogic} --- kontrakt dla strategii rozprzestrzeniania: \texttt{Spread(IVirus, Board)}.
+    \item \texttt{IHealingAbility} --- definiuje \texttt{Range}, \texttt{Effectiveness},
+          \texttt{Heal(Human)}. Implementowany przez \texttt{Doctor} i \texttt{Hospital}.
+    \item \texttt{IRandom} --- abstrakcja generatora liczb losowych: \texttt{Next()},
+          \texttt{Next(int)}, \texttt{Next(int, int)}, \texttt{NextSingle()}.
+\end{itemize}
+
+\subsection{Jednostki (\texttt{Models/Entities/})}
+
+\subsubsection{Entity}
+
+Klasa bazowa dla wszystkich obiektów na planszy. Przechowuje współrzędne $(x, y)$,
+definiuje wirtualne właściwości \texttt{Symbol}, \texttt{Description}, \texttt{RenderPriority}
+oraz wirtualną metodę \texttt{Update(Board)}.
+
+\subsubsection{Hospital}
+
+Stacjonarna jednostka lecznicza (symbol \texttt{+}). Implementuje \texttt{IHealingAbility}:
+\begin{itemize}
+    \item Zasięg: 2
+    \item Skuteczność: 1.0
+    \item Mechanizm: w każdej aktualizacji znajduje zarażonych w zasięgu i zwiększa
+          ich licznik \texttt{HealingTicks}; po 5 tickach następuje pełne wyleczenie.
+\end{itemize}
+
+\subsection{Ludzie (\texttt{Models/Humans/})}
+
+\subsubsection{Human}
+
+Klasa bazowa dla wszystkich typów ludzi. Kluczowe pola i metody:
+
+\begin{itemize}
+    \item \texttt{IsAlive} --- czy żyje
+    \item \texttt{Virus} --- wirus, którym jest zarażony (lub \texttt{null})
+    \item \texttt{IsInfected} --- czy jest zarażony
+    \item \texttt{HealingTicks} --- licznik postępu leczenia
+    \item \texttt{Age} --- wiek (wpływa na migrację)
+    \item \texttt{HomeRegion} --- region macierzysty
+    \item \texttt{MigrationCooldown} --- czas do kolejnej migracji
+\end{itemize}
+
+\textbf{Mechanika ruchu:}
+\begin{enumerate}
+    \item Ruch lokalny: o 1 krok w losowym kierunku $(\Delta x, \Delta y \in \{-1,0,1\})$
+    \item Redukcja przez świadomość: ruch tylko gdy \texttt{rng.NextSingle() > AwarenessLevel}
+    \item Blokada: podczas lockdownu nie można opuścić swojego regionu
+    \item Migracja dalekodystansowa: losowa teleportacja do innego regionu z cooldownem 15 ticków
+\end{enumerate}
+
+Prawdopodobieństwo migracji:
+\[
+P_{\text{migracji}} = 0.03 \cdot M_{\text{zawodu}} \cdot \left(1.4 - \frac{\text{Age}}{100}\right)
+\]
+
+gdzie $M_{\text{zawodu}}$ wynosi: Student 1.4, Worker 1.1, Doctor 1.0, Elder 0.7.
+Mnożnik wieku jest clampowany do przedziału $[0.6, 1.4]$.
+
+\subsubsection{Worker}
+
+\begin{itemize}
+    \item Symbol: \texttt{W}
+    \item Wiek: 23--61
+    \item Specjalizacja: wykonuje \textbf{dwa ruchy} na tick (dwukrotne wywołanie \texttt{Move()})
+\end{itemize}
+
+\subsubsection{Student}
+
+\begin{itemize}
+    \item Symbol: \texttt{S}
+    \item Wiek: 16--26
+    \item Specjalizacja: \textbf{50\% naturalnej odporności} --- metoda \texttt{Infect()} ma 50\% szansy
+          na odrzucenie infekcji
+\end{itemize}
+
+\subsubsection{Elder}
+
+\begin{itemize}
+    \item Symbol: \texttt{O}
+    \item Wiek: 65--91
+    \item Specjalizacja: działa tylko w \textbf{50\% aktualizacji} (pomija swoją turę gdy
+          \texttt{rng.NextSingle() < 0.5f})
+\end{itemize}
+
+\subsubsection{Doctor}
+
+\begin{itemize}
+    \item Symbol: \texttt{D}
+    \item Implementuje \texttt{IHealingAbility}: zasięg 3, skuteczność 0.8
+    \item W każdej aktualizacji: najpierw się przemieszcza, następnie leczy zarażonych w zasięgu
+    \item Leczenie trwa 5 ticków (addytywne z innymi źródłami leczenia)
+\end{itemize}
+
+\subsection{Wirusy (\texttt{Models/Viruses/})}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Wirus} & \textbf{Infectivity} & \textbf{Mortality} & \textbf{Zasięg} & \textbf{Strategia} \\ \hline
+Flu    & 0.25 & 0.005 (0.5\%)  & 1 & Uniform \\
+Covid  & 0.65 & 0.02 (2\%)     & 2 & DistanceWeighted \\
+Rabies & 0.50 & 0.30 (30\%)    & 1 & Focused \\ \hline
+\end{tabular}
+\caption{Parametry wirusów}
+\end{table}
+
+Każdy wirus deleguje metodę \texttt{Spread()} do swojej strategii rozprzestrzeniania
+(\textbf{wzorzec Strategii}).
+
+\subsection{Strategie rozprzestrzeniania (\texttt{Models/SpreadLogic/})}
+
+\subsubsection{SpreadLogicBase}
+
+Klasa abstrakcyjna implementująca \textbf{metodę szablonową}:
+
+\begin{lstlisting}[language={[Sharp]C}]
+public void Spread(IVirus virus, Board board)
+{
+    var infected = board.GetInfectedHumans();
+    foreach (var source in infected)
+    {
+        SpreadFromSource(virus, board, source);
+
+        // Sprawdzenie smiertelnosci
+        if (rng.NextSingle() <= virus.Mortality)
+            source.Die();
+    }
+}
+
+protected abstract void SpreadFromSource(IVirus virus, Board board, Human source);
+\end{lstlisting}
+
+\subsubsection{UniformSpreadLogic}
+
+Każdy zdrowy człowiek w zasięgu ma taką samą szansę na zarażenie:
+\[
+P_{\text{infekcji}} = \text{Infectivity}
+\]
+
+\subsubsection{DistanceWeightedSpreadLogic}
+
+Szansa na zarażenie maleje liniowo z odległością:
+\[
+P_{\text{infekcji}} = \text{Infectivity} \cdot \left(1 - \frac{\text{distance}}{\text{range} + 1}\right)
+\]
+
+gdzie \texttt{distance} to odległość euklidesowa (zaokrąglona w górę).
+
+\subsubsection{FocusedSpreadLogic}
+
+Wybierany jest jeden losowy cel w zasięgu, który otrzymuje szansę na zarażenie równą
+\texttt{Infectivity}.
+
+\subsection{Plansza i generowanie mapy}
+
+\subsubsection{Board}
+
+Centralny stan gry. Zawiera:
+
+\begin{itemize}
+    \item Dwuwymiarową tablicę kafelków \texttt{Tile[,] grid} o rozmiarze $40 \times 40$
+    \item Listę jednostek \texttt{List<Entity> entities}
+    \item Właściwości: \texttt{AwarenessLevel}, \texttt{LockdownEnabled}
+\end{itemize}
+
+Kluczowe metody:
+
+\begin{itemize}
+    \item \texttt{IsWalkable(int x, int y)} --- sprawdza czy kafelek jest przechodni
+    \item \texttt{GetHumansInRange(int cx, int cy, int range)} --- znajdowanie ludzi w zasięgu
+          kołowym (wykorzystuje kwadrat odległości euklidesowej)
+    \item \texttt{GetInfectedHumans()} --- zwraca listę zarażonych, żywych ludzi
+    \item \texttt{addRandomEntity(Func<int,int,Entity> factory)} --- umieszcza jednostkę
+          na losowym kafelku lądowym
+\end{itemize}
+
+\subsubsection{MapGenerator}
+
+Proceduralne generowanie mapy z wykorzystaniem algorytmu \textbf{Voronoia z BFS}:
+
+\begin{enumerate}
+    \item Wybór 4 punktów zarodkowych (seed points) z minimalnym odstępem
+          $\text{regionRadius} \cdot 2 \cdot 0.5$
+    \item Ekspansja BFS z użyciem \texttt{PriorityQueue} (priorytetem jest odległość)
+    \item Strefa buforowa wokół granic regionów zapobiega ich bezpośredniemu sąsiedztwu
+    \item Nieprzypisane komórki stają się wodą (\texttt{Water})
+    \item Każdy region otrzymuje unikalną wartość enum (\texttt{Region0}--\texttt{Region3})
+\end{enumerate}
+
+\subsection{Renderowanie}
+
+Klasa \texttt{Rendering} odpowiada za wyświetlanie stanu symulacji w konsoli z użyciem
+kolorów ANSI:
+
+\begin{itemize}
+    \item Zarażeni ludzie --- kolor czerwony
+    \item Martwi ludzie --- kolor czarny
+    \item Lekarze --- jasny zielony
+    \item Szpitale --- żółty
+    \item Woda --- jasny niebieski
+    \item Ląd --- domyślny
+\end{itemize}
+
+Każda komórka renderuje symbol jednostki (jeśli występuje) lub symbol kafelka.
+
+\subsection{Statystyki}
+
+Klasa \texttt{Statistics} kolekcjonuje dane w postaci krotek
+\texttt{(Tick, Infected, Dead)} i eksportuje je do pliku \texttt{simulation.csv}
+po zakończeniu symulacji.
+
+\section{Mechanizmy symulacyjne}
+
+\subsection{Świadomość społeczna (Awareness)}
+
+W miarę wzrostu liczby zarażonych, ludzie zmniejszają swoją mobilność:
+
+\[
+\text{AwarenessLevel} = \min\left(1, \frac{\text{liczba zarażonych}}{300}\right)
+\]
+
+Ruch następuje tylko gdy \texttt{rng.NextSingle() > AwarenessLevel}. Przy 300 lub więcej
+zarażonych świadomość osiąga maksimum (1.0), całkowicie zatrzymując dobrowolny ruch.
+
+\subsection{Blokada (Lockdown)}
+
+Aktywuje się gdy liczba zarażonych przekracza 80\% żyjącej populacji. Podczas lockdownu
+ludzie nie mogą przekraczać granic swojego regionu macierzystego.
+
+\subsection{System leczenia}
+
+Zarówno lekarze, jak i szpitale implementują \texttt{IHealingAbility}:
+
+\begin{itemize}
+    \item Każde źródło leczenia zwiększa \texttt{HealingTicks} zarażonego o 1 na tick
+    \item Po osiągnięciu 5 ticków następuje całkowite wyleczenie (\texttt{Heal()})
+    \item Wiele źródeł leczenia działa addytywnie --- np. lekarz i szpital razem
+          leczą w $2.5$ ticka
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Jednostka} & \textbf{Zasięg} & \textbf{Skuteczność} \\ \hline
+Doctor  & 3 & 0.8 \\
+Hospital & 2 & 1.0 \\ \hline
+\end{tabular}
+\caption{Parametry jednostek leczących}
+\end{table}
+
+\section{Testy}
+
+Projekt zawiera zestaw testów jednostkowych w technologii xUnit
+(\texttt{tests/VirusSimulation.Tests/}).
+
+\subsection{Konfiguracja}
+
+Testy wykorzystują \texttt{GameRandom.Create(42)} (deterministyczne ziarno) dla
+zapewnienia powtarzalności. Równoległe wykonywanie testów jest wyłączone
+(\texttt{xunit.runner.json}).
+
+\subsection{Pokrycie testów}
+
+\begin{itemize}
+    \item \textbf{HumanTests:} infekcja, leczenie, śmierć, odporność Studentów (test statystyczny
+          na 2000 prób), podwójny ruch Workera, 50\% ruchu Eldera (1000 prób)
+    \item \textbf{BoardTests:} przechodniość kafelków, pobieranie jednostek, zakresy,
+          blokada regionów, losowe rozmieszczanie
+    \item \textbf{EntityTests:} leczenie przez szpital (stopniowe i pełne), leczenie przez
+          lekarza, właściwości jednostek, \texttt{SpreadLogicFactory}
+    \item \textbf{VirusTests:} właściwości wirusów, rozprzestrzenianie na pustej planszy,
+          wszystkie trzy strategie (ziarno 42)
+    \item \textbf{StatisticsTests:} format CSV, wiele wierszy, wiersze zerowe
+\end{itemize}
+
+\subsection{Uruchamianie}
+
+\begin{lstlisting}[frame=single, numbers=none, basicstyle=\ttfamily\small]
+dotnet test tests/VirusSimulation.Tests
+\end{lstlisting}
+
+\section{Instrukcja uruchomienia}
+
+\subsection{Wymagania}
+
+\begin{itemize}
+    \item .NET SDK 10.0 lub nowszy
+\end{itemize}
+
+\subsection{Budowanie}
+
+\begin{lstlisting}[frame=single, numbers=none, basicstyle=\ttfamily\small]
+dotnet build
+\end{lstlisting}
+
+\subsection{Uruchamianie}
+
+\begin{lstlisting}[frame=single, numbers=none, basicstyle=\ttfamily\small]
+dotnet run
+\end{lstlisting}
+
+Program pyta o:
+\begin{enumerate}
+    \item Typ wirusa (Flu / Covid / Rabies)
+    \item Liczbę poszczególnych jednostek (Workers, Students, Elders, Doctors, Hospitals)
+\end{enumerate}
+
+\subsection{Przebieg symulacji}
+
+\begin{enumerate}
+    \item Generowanie mapy ($40 \times 40$)
+    \item Rozmieszczenie jednostek na lądzie
+    \item Zarażenie pierwszej napotkanej osoby
+    \item Pętla ticków (z opóźnieniem 200 ms):
+          \begin{itemize}
+              \item Aktualizacja jednostek
+              \item Rozprzestrzenianie wirusa
+              \item Renderowanie stanu
+              \item Zapis statystyk
+          \end{itemize}
+    \item Zakończenie po spełnieniu warunku brzegowego
+    \item Eksport wyników do \texttt{simulation.csv}
+\end{enumerate}
+
+\section{Podsumowanie}
+
+Projekt \texttt{VirusSimulation} stanowi kompleksową implementację symulacji epidemii
+w języku C\# z wykorzystaniem zaawansowanych mechanizmów programowania obiektowego:
+
+\begin{itemize}
+    \item \textbf{Czytelna architektura} --- hierarchia dziedziczenia, pięć wyspecjalizowanych
+          interfejsów
+    \item \textbf{Wzorce projektowe} --- Strategia, Metoda Szablonowa, Fabryka, Wstrzykiwanie
+          Zależności, Segregacja Interfejsów
+    \item \textbf{Testowalność} --- deterministyczne ziarno RNG, interfejs \texttt{IRandom},
+          wysoka izolacja komponentów
+    \item \textbf{Rozszerzalność} --- łatwość dodawania nowych typów wirusów, strategii
+          rozprzestrzeniania, jednostek i mechanik
+    \item \textbf{Proceduralna generacja} --- algorytm Voronoia z BFS do tworzenia
+          zróżnicowanych map
+    \item \textbf{Złożone zachowania} --- migracja, świadomość, blokada, system leczenia,
+          odporność, statystyki
+\end{itemize}
+
+\appendix
+
+\section{Diagramy UML}
+
+\subsection{Diagram klas}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{class_diagram.png}
+\caption{Diagram klas --- hierarchia dziedziczenia, realizacje interfejsów, kompozycje}
+\label{fig:class-diagram}
+\end{figure}
+
+\subsection{Diagram obiektów}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{object_diagram.png}
+\caption{Diagram obiektów --- przykładowy stan symulacji}
+\label{fig:object-diagram}
+\end{figure}
+
+\subsection{Diagram sekwencji}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{sequence_diagram.png}
+\caption{Diagram sekwencji --- dwufazowa pętla symulacji}
+\label{fig:sequence-diagram}
+\end{figure}
+
+\subsection{Diagram stanów}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{state_diagram.png}
+\caption{Diagram stanów człowieka --- cykl życia}
+\label{fig:state-diagram}
+\end{figure}
+
+\end{document}

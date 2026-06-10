@@ -2,7 +2,7 @@ public class Board
 {
     Tile[,] grid;
     public List<Entity> entities = new List<Entity>();
-    Random random = new Random();
+    IRandom random;
 
     public int Width => grid.GetLength(0);
     public int Height => grid.GetLength(1);
@@ -12,15 +12,45 @@ public class Board
 
     public Board(int width, int height)
     {
+        random = GameRandom.Create();
         var generator = new MapGenerator(width, height);
+        grid = generator.Generate();
+    }
+
+    public Board(int width, int height, IRandom rng)
+    {
+        random = rng;
+        var generator = new MapGenerator(width, height, rng);
         grid = generator.Generate();
     }
 
     public Board(int width, int height, bool useSimple)
     {
+        random = GameRandom.Create();
         if (!useSimple)
         {
             var generator = new MapGenerator(width, height);
+            grid = generator.Generate();
+        }
+        else
+        {
+            grid = new Tile[width, height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    grid[x, y] = Tile.Land;
+                }
+            }
+        }
+    }
+
+    public Board(int width, int height, bool useSimple, IRandom rng)
+    {
+        random = rng;
+        if (!useSimple)
+        {
+            var generator = new MapGenerator(width, height, rng);
             grid = generator.Generate();
         }
         else
@@ -41,17 +71,18 @@ public class Board
         entities.Add(entity);
     }
 
-    // TODO: This can get into an infinite loop if the board is full of entities.
     public void addRandomEntity(System.Func<int, int, Entity> factory)
     {
-        int x = random.Next(grid.GetLength(0));
-        int y = random.Next(grid.GetLength(1));
-        if (grid[x, y] != Tile.Land && grid[x, y] != Tile.Region0 && grid[x, y] != Tile.Region1 && grid[x, y] != Tile.Region2 && grid[x, y] != Tile.Region3)
+        while (true)
         {
-            addRandomEntity(factory);
-            return;
+            int x = random.Next(grid.GetLength(0));
+            int y = random.Next(grid.GetLength(1));
+            if (grid[x, y] is Tile.Land or Tile.Region0 or Tile.Region1 or Tile.Region2 or Tile.Region3)
+            {
+                addEntity(factory(x, y));
+                return;
+            }
         }
-        addEntity(factory(x, y));
     }
 
     public void print()
@@ -101,7 +132,6 @@ public class Board
 
     public bool IsWalkable(int x, int y)
     {
-        // poza mapa
         if (x < 0 || y < 0 ||
             x >= grid.GetLength(0) ||
             y >= grid.GetLength(1))
@@ -109,7 +139,6 @@ public class Board
             return false;
         }
 
-        // woda
         if (grid[x, y] == Tile.Water)
         {
             return false;

@@ -1,6 +1,5 @@
 public class Doctor : Human, ITile, IHealingAbility
 {
-    // ITile implementation
     public override char Symbol => 'D';
 
     public override string Description => "Doctor";
@@ -10,7 +9,14 @@ public class Doctor : Human, ITile, IHealingAbility
 
     public float Effectiveness => 0.8f;
 
-    public Doctor(int x, int y) : base(x, y, RandomAge(28, 65))
+    public Doctor(int x, int y)
+        : base(x, y, GameRandom.Create().Next(28, 66), GameRandom.Create())
+    {
+
+    }
+
+    public Doctor(int x, int y, IRandom rng)
+        : base(x, y, rng.Next(28, 66), rng)
     {
 
     }

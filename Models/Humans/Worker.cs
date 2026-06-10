@@ -6,7 +6,13 @@ public class Worker : Human
         $"Worker{(IsInfected ? " (Infected)" : "")}";
 
     public Worker(int x, int y)
-        : base(x, y, RandomAge(23, 60))
+        : base(x, y, GameRandom.Create().Next(23, 61), GameRandom.Create())
+    {
+
+    }
+
+    public Worker(int x, int y, IRandom rng)
+        : base(x, y, rng.Next(23, 61), rng)
     {
 
     }

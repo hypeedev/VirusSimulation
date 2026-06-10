@@ -1,0 +1,33 @@
+@startuml
+
+state Healthy : Alive, Virus == null
+
+state Infected : Alive, Virus != null
+
+state Dead : IsAlive == false
+
+[*] --> Healthy : Start symulacji
+
+Healthy --> Infected : Infect(IVirus virus)
+
+Infected --> Infected : Tick rozprzestrzeniania\n(pozostaje zakażony)
+
+Infected --> Healthy : Heal()\n(po 5 tickach leczenia\nod Doktora lub Szpitala)
+
+Infected --> Dead : Die()\n(sprawdzenie śmiertelności\nw SpreadLogicBase.Spread())
+
+Dead --> [*] : Koniec symulacji
+
+note right of Healthy
+  Student.Infect() ma
+  50% naturalnej odporności
+end note
+
+note right of Infected
+  HealingTicks zwiększane
+  przez Doktora (Zasięg=3, Eff=0.8)
+  lub Szpital (Zasięg=2, Eff=1.0)
+  Każde źródło +1 na tick.
+end note
+
+@enduml

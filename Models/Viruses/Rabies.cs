@@ -8,9 +8,17 @@ public class Rabies : IVirus
 
     public int InfectionRange { get; } = 1;
 
-    private readonly ISpreadLogic spreadLogic =
-        SpreadLogicFactory.Create(
-            SpreadLogicType.Focused);
+    private readonly ISpreadLogic spreadLogic;
+
+    public Rabies()
+    {
+        spreadLogic = new FocusedSpreadLogic();
+    }
+
+    public Rabies(IRandom rng)
+    {
+        spreadLogic = new FocusedSpreadLogic(rng);
+    }
 
     public void Spread(Board board)
     {
