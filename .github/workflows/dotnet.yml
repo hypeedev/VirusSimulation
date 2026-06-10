@@ -35,10 +35,10 @@ jobs:
           include-prerelease: true
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore && dotnet restore tests/VirusSimulation.Tests
 
-      - name: Build
-        run: dotnet build --no-restore
+      - name: Build tests
+        run: dotnet build tests/VirusSimulation.Tests --no-restore
 
       - name: Run tests
         run: dotnet test tests/VirusSimulation.Tests --no-build --verbosity normal
