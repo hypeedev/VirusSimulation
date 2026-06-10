@@ -4,7 +4,7 @@ public class Rabies : IVirus
 
     public float Infectivity { get; } = 0.5f;
 
-    public float Mortality { get; } = 0.7f;
+    public float Mortality { get; } = 0.3f;
 
     public int InfectionRange { get; } = 1;
 
